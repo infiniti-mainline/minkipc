@@ -4,6 +4,7 @@
 #ifndef _SUPPLICANT_H
 #define _SUPPLICANT_H
 
+#include <pthread.h>
 #include <qcomtee_object_types.h>
 
 #define set_errno(e) (errno = (-e))
