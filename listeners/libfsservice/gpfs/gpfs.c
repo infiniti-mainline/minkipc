@@ -413,18 +413,24 @@ static int perform_read_write(uint32_t cmd_id, int fd, uint8_t *buf,
 	int ret_val = 0;
 
 	while (bytes_remaining > 0) {
-		if (cmd_id == TZ_GPFS_MSG_CMD_DATA_FILE_READ ||
+		if (cmd_id == TZ_GPFS_MSG_CMD_FILE_READ ||
+		    cmd_id == TZ_GPFS_MSG_CMD_DATA_FILE_READ ||
 		    cmd_id == TZ_GPFS_MSG_CMD_PERSIST_FILE_READ) {
 			ret_val = read(fd, buf, bytes_remaining);
 			if (ret_val < 0)
 				return errno;
 			MSGD("Read %d bytes\n", ret_val);
-		} else if (cmd_id == TZ_GPFS_MSG_CMD_DATA_FILE_WRITE ||
+			if (ret_val == 0)
+				break;
+		} else if (cmd_id == TZ_GPFS_MSG_CMD_FILE_WRITE ||
+			   cmd_id == TZ_GPFS_MSG_CMD_DATA_FILE_WRITE ||
 			   cmd_id == TZ_GPFS_MSG_CMD_PERSIST_FILE_WRITE) {
 			ret_val = write(fd, buf, bytes_remaining);
 			if (ret_val < 0)
 				return errno;
 			MSGD("Wrote %d bytes\n", ret_val);
+			if (ret_val == 0)
+				return EIO;
 		} else {
 			MSGE("Invalid command ID: %d\n", cmd_id);
 			return EINVAL;
@@ -542,6 +548,9 @@ int gpfile_read(void *req, size_t req_len, void *rsp, size_t rsp_len)
 	}
 
 	switch (my_req->cmd_id) {
+	case TZ_GPFS_MSG_CMD_FILE_READ:
+		strlcpy(abs_file_path, my_req->pathname, sizeof(abs_file_path));
+		break;
 	case TZ_GPFS_MSG_CMD_PERSIST_FILE_READ:
 		strlcpy(abs_file_path, PERSIST_PATH, TZ_FILE_NAME_LEN);
 		strlcat(abs_file_path, my_req->pathname,
@@ -606,6 +615,9 @@ int gpfile_write(void *req, size_t req_len, void *rsp, size_t rsp_len)
 	}
 
 	switch (my_req->cmd_id) {
+	case TZ_GPFS_MSG_CMD_FILE_WRITE:
+		strlcpy(abs_file_path, my_req->pathname, sizeof(abs_file_path));
+		break;
 	case TZ_GPFS_MSG_CMD_PERSIST_FILE_WRITE:
 		strlcpy(abs_file_path, PERSIST_PATH, TZ_FILE_NAME_LEN);
 		strlcat(abs_file_path, my_req->pathname,
@@ -667,6 +679,16 @@ int gpfile_remove(void *req, size_t req_len, void *rsp, size_t rsp_len)
 	}
 
 	switch (my_req->cmd_id) {
+	case TZ_GPFS_MSG_CMD_FILE_REMOVE: {
+		char resolved[TZ_FILE_DIR_LEN] = { 0 };
+
+		strlcpy(abs_file_path,
+			get_resolved_path(my_req->pathname,
+					  strlen(my_req->pathname), resolved,
+					  TZ_FILE_DIR_LEN),
+			sizeof(abs_file_path));
+		break;
+	}
 	case TZ_GPFS_MSG_CMD_PERSIST_FILE_REMOVE:
 		strlcpy(abs_file_path, PERSIST_PATH, TZ_FILE_NAME_LEN);
 		strlcat(abs_file_path, my_req->pathname,
@@ -743,6 +765,20 @@ int gpfile_rename(void *req, size_t req_len, void *rsp, size_t rsp_len)
 	}
 
 	switch (my_req->cmd_id) {
+	case TZ_GPFS_MSG_CMD_FILE_RENAME: {
+		char old_res[TZ_FILE_DIR_LEN] = { 0 };
+		char new_res[TZ_FILE_DIR_LEN] = { 0 };
+
+		strlcpy(abs_file_path_old,
+			get_resolved_path(my_req->from, strlen(my_req->from),
+					  old_res, TZ_FILE_DIR_LEN),
+			TZ_CM_MAX_NAME_LEN);
+		strlcpy(abs_file_path_new,
+			get_resolved_path(my_req->to, strlen(my_req->to),
+					  new_res, TZ_FILE_DIR_LEN),
+			TZ_CM_MAX_NAME_LEN);
+		break;
+	}
 	case TZ_GPFS_MSG_CMD_PERSIST_FILE_RENAME:
 		strlcpy(abs_file_path_old, PERSIST_PATH, TZ_FILE_NAME_LEN);
 		strlcat(abs_file_path_old, my_req->from,

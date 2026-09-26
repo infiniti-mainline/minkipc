@@ -19,6 +19,10 @@
  * from the Rich Execution Environment (REE).
  */
 typedef enum {
+	TZ_GPFS_MSG_CMD_FILE_READ = 0x00000000, /**< Read from a file */
+	TZ_GPFS_MSG_CMD_FILE_WRITE, /**< Write to a file */
+	TZ_GPFS_MSG_CMD_FILE_REMOVE, /**< Remove a file */
+	TZ_GPFS_MSG_CMD_FILE_RENAME, /**< Rename a file */
 	TZ_GPFS_MSG_CMD_DATA_FILE_READ = 0x00000004, /**< Read from a file in data partition */
 	TZ_GPFS_MSG_CMD_DATA_FILE_WRITE, /**< Write to a file in data partition */
 	TZ_GPFS_MSG_CMD_DATA_FILE_REMOVE, /**< Remove a file from data partition */

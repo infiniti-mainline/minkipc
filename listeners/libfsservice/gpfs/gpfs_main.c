@@ -145,24 +145,28 @@ int smci_dispatch(void *buf, size_t buf_len)
 
 	/* Read command id */
 	switch (gpfs_cmd_id) {
+	case (TZ_GPFS_MSG_CMD_FILE_READ):
 	case (TZ_GPFS_MSG_CMD_DATA_FILE_READ):
 	case (TZ_GPFS_MSG_CMD_PERSIST_FILE_READ):
 		MSGD("gpfile_read starts!\n");
 		ret = gpfile_read(buf, buf_len, buf, buf_len);
 		MSGD("gpfile_read finished!\n");
 		break;
+	case (TZ_GPFS_MSG_CMD_FILE_WRITE):
 	case (TZ_GPFS_MSG_CMD_DATA_FILE_WRITE):
 	case (TZ_GPFS_MSG_CMD_PERSIST_FILE_WRITE):
 		MSGD("gpfile_write starts!\n");
 		ret = gpfile_write(buf, buf_len, buf, buf_len);
 		MSGD("gpfile_write finished!\n");
 		break;
+	case (TZ_GPFS_MSG_CMD_FILE_REMOVE):
 	case (TZ_GPFS_MSG_CMD_DATA_FILE_REMOVE):
 	case (TZ_GPFS_MSG_CMD_PERSIST_FILE_REMOVE):
 		MSGD("gpfile_remove starts!\n");
 		ret = gpfile_remove(buf, buf_len, buf, buf_len);
 		MSGD("gpfile_remove finished!\n");
 		break;
+	case (TZ_GPFS_MSG_CMD_FILE_RENAME):
 	case (TZ_GPFS_MSG_CMD_DATA_FILE_RENAME):
 	case (TZ_GPFS_MSG_CMD_PERSIST_FILE_RENAME):
 		MSGD("gpfile_rename starts!\n");
