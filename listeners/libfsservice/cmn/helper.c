@@ -20,12 +20,14 @@
 #define strlcpy g_strlcpy
 #endif
 
-#define WHITE_LIST_SIZE 4
+#define WHITE_LIST_SIZE 6
 static char *gp_whitelist_paths[] = {
 	"/data/system/users/",
 	"/data/misc/qsee/",
 	"/vendor/data/",
-	"/data/qwes/licenses/"
+	"/data/qwes/licenses/",
+	"/data/vendor/",
+	"/data/vendor_de/"
 };
 
 static bool should_log(void) {
